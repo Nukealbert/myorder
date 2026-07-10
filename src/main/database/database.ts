@@ -2,6 +2,7 @@ import Database from 'better-sqlite3';
 import { app } from 'electron';
 import path from 'path';
 import fs from 'fs';
+import seedPinCodes from './seed/pincodes.json';
 
 let db: Database.Database | null = null;
 
@@ -171,24 +172,10 @@ function migrate(database: Database.Database) {
     CREATE INDEX IF NOT EXISTS idx_pin_code ON pin_codes(pin_code);
   `);
 
-  // Seed default PIN codes if empty
+  // Seed default PIN codes if empty or partially populated
   const countRow = database.prepare('SELECT COUNT(*) as count FROM pin_codes').get() as { count: number };
-  if (countRow.count === 0) {
+  if (countRow.count < 19000) {
     console.log('Seeding initial PIN codes directory...');
-    const seedPinCodes = [
-      { pin_code: '110001', office_name: 'Connaught Place', district: 'New Delhi', state: 'DELHI', office_type: 'SO', delivery_status: 'Delivery' },
-      { pin_code: '110002', office_name: 'Indraprastha', district: 'New Delhi', state: 'DELHI', office_type: 'SO', delivery_status: 'Delivery' },
-      { pin_code: '400001', office_name: 'Mumbai G.P.O.', district: 'Mumbai', state: 'MAHARASHTRA', office_type: 'HO', delivery_status: 'Delivery' },
-      { pin_code: '400002', office_name: 'Kalbadevi', district: 'Mumbai', state: 'MAHARASHTRA', office_type: 'SO', delivery_status: 'Delivery' },
-      { pin_code: '560001', office_name: 'Bangalore G.P.O.', district: 'Bengaluru', state: 'KARNATAKA', office_type: 'HO', delivery_status: 'Delivery' },
-      { pin_code: '560002', office_name: 'Bangalore City', district: 'Bengaluru', state: 'KARNATAKA', office_type: 'SO', delivery_status: 'Delivery' },
-      { pin_code: '600001', office_name: 'Chennai G.P.O.', district: 'Chennai', state: 'TAMIL NADU', office_type: 'HO', delivery_status: 'Delivery' },
-      { pin_code: '600002', office_name: 'Anna Road', district: 'Chennai', state: 'TAMIL NADU', office_type: 'HO', delivery_status: 'Delivery' },
-      { pin_code: '700001', office_name: 'Kolkata G.P.O.', district: 'Kolkata', state: 'WEST BENGAL', office_type: 'HO', delivery_status: 'Delivery' },
-      { pin_code: '208001', office_name: 'Kanpur G.P.O.', district: 'Kanpur Nagar', state: 'UTTAR PRADESH', office_type: 'HO', delivery_status: 'Delivery' },
-      { pin_code: '208019', office_name: 'Kanpur Cantt', district: 'Kanpur Nagar', state: 'UTTAR PRADESH', office_type: 'SO', delivery_status: 'Delivery' },
-      { pin_code: '262122', office_name: 'Tanakpur', district: 'Champawat', state: 'UTTARAKHAND', office_type: 'SO', delivery_status: 'Delivery' }
-    ];
 
     const insertStmt = database.prepare(`
       INSERT OR IGNORE INTO pin_codes (pin_code, office_name, district, state, office_type, delivery_status)
